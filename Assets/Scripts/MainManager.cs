@@ -3,18 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using static UnityEngine.Rendering.DebugUI;
 
 public class MainManager : MonoBehaviour
 {
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
+    //private MainMenuManager mainMenuManager;
 
     public Text ScoreText;
     public GameObject GameOverText;
+    public Text bestScore;
     
     private bool m_Started = false;
     private int m_Points;
+    private static int bestPoints;
+    private MainMenuManager mainMenuManager;
+    private string newName;
+    private string highScoreName;
     
     private bool m_GameOver = false;
 
@@ -22,6 +29,11 @@ public class MainManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        mainMenuManager = GetComponent<MainMenuManager>();
+        newName = PlayerPrefs.GetString("player_name", "Unknown Player");
+        highScoreName = PlayerPrefs.GetString("HighScoreName");
+        //PlayerPrefs.SetInt("HighScore", 0);
+
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -36,6 +48,7 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        bestScore.text ="Best Score: " + highScoreName + ": " + PlayerPrefs.GetInt("HighScore", 0).ToString();
     }
 
     private void Update()
@@ -66,6 +79,13 @@ public class MainManager : MonoBehaviour
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
+        if(m_Points > PlayerPrefs.GetInt("HighScore", 0))
+        {
+            highScoreName = newName;
+            PlayerPrefs.SetString("HighScoreName", highScoreName);
+            PlayerPrefs.SetInt("HighScore", m_Points);
+            bestScore.text = "Best Score: " + highScoreName + ": " + m_Points.ToString(); 
+        }     
     }
 
     public void GameOver()
@@ -73,4 +93,5 @@ public class MainManager : MonoBehaviour
         m_GameOver = true;
         GameOverText.SetActive(true);
     }
+
 }
